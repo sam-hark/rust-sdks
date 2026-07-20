@@ -4075,6 +4075,7 @@ name = "livekit-token-source"
 version = "0.1.0"
 dependencies = [
  "thiserror 2.0.19",
+ "serde",
 ]
 
 [[package]]
