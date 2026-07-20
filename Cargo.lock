@@ -7445,6 +7445,7 @@ name = "token_source"
 version = "0.1.0"
 dependencies = [
  "livekit-token-source",
+ "tokio",
 ]
 
 [[package]]
