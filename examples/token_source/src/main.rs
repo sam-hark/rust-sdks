@@ -18,10 +18,8 @@ async fn main() {
         },
     }
 
-    let options = TokenSourceFetchOptions { 
-        agent_name: Some("Church".to_string()),
-        ..Default::default()
-    };
+    let options = TokenSourceFetchOptions::new()
+        .with_agent_name("Church");
 
     // =======================================================
     let sandbox = TokenSourceSandbox::new("test1-xqsb8v".to_string());
@@ -38,8 +36,8 @@ async fn main() {
 
     // =======================================================
     let endpoint = TokenSourceEndpoint::new(
-        "https://cloud-api.livekit.io/api/v2/sandbox/connection-details".to_string(), 
-        ("X-Sandbox-ID".to_string(), "test1-xqsb8v".to_string())
+        "https://cloud-api.livekit.io/api/v2/sandbox/connection-details", 
+        vec![("X-Sandbox-ID".to_string(), "test1-xqsb8v".to_string())]
     );
     match endpoint.fetch(&options).await {
         Ok(response) => {

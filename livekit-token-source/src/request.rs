@@ -2,34 +2,93 @@ use std::collections::HashMap;
 
 /// Per-call overrides used to parameterize a token request.
 ///
-/// Every field is optional: `None` means "leave it out of the request" and the
-/// server picks a default. Because the struct derives `Default`, you only need
-/// to set the fields you care about:
+/// Every option is optional: anything left unset is omitted from the request and the
+/// server picks a default. Set only the options you care about:
 ///
 /// ```
-/// TokenSourceFetchOptions {
-///     room_name: Some("my-room".to_string()),
-///     ..Default::default()
-/// };
+/// # use livekit_token_source::TokenSourceFetchOptions;
+/// let options = TokenSourceFetchOptions::new()
+///     .with_room_name("my-room")
+///     .with_participant_identity("user-123");
 /// ```
 #[derive(Default, Clone, Debug)]
 pub struct TokenSourceFetchOptions {
-    /// The name of the room being requested when generating credentials.
-    pub room_name: Option<String>,
-    /// The name of the participant being requested when generating credentials.
-    pub participant_name: Option<String>,
-    /// The identity of the participant being requested when generating credentials.
-    pub participant_identity: Option<String>,
-    /// The metadata of the participant being requested when generating credentials.
-    pub participant_metadata: Option<String>,
-    /// The attributes of the participant being requested when generating credentials.
-    pub participant_attributes: Option<HashMap<String, String>>,
-    /// The name of the agent to dispatch into the room.
-    pub agent_name: Option<String>,
-    /// The metadata to pass to the dispatched agent.
-    pub agent_metadata: Option<String>,
-    /// Optional deployment to target. Leave empty to target the production deployment.
-    pub agent_deployment: Option<String>,
+    pub(crate) room_name: Option<String>,
+    pub(crate) participant_name: Option<String>,
+    pub(crate) participant_identity: Option<String>,
+    pub(crate) participant_metadata: Option<String>,
+    pub(crate) participant_attributes: Option<HashMap<String, String>>,
+    pub(crate) agent_name: Option<String>,
+    pub(crate) agent_metadata: Option<String>,
+    pub(crate) agent_deployment: Option<String>,
+}
+
+impl TokenSourceFetchOptions {
+    /// Creates empty fetch options; the server picks a default for every field.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the name of the room being requested when generating credentials.
+    pub fn with_room_name(mut self, value: impl Into<String>) -> Self {
+        self.room_name = Some(value.into());
+        self
+    }
+
+    /// Sets the name of the participant being requested when generating credentials.
+    pub fn with_participant_name(mut self, value: impl Into<String>) -> Self {
+        self.participant_name = Some(value.into());
+        self
+    }
+
+    /// Sets the identity of the participant being requested when generating credentials.
+    pub fn with_participant_identity(mut self, value: impl Into<String>) -> Self {
+        self.participant_identity = Some(value.into());
+        self
+    }
+
+    /// Sets the metadata of the participant being requested when generating credentials.
+    pub fn with_participant_metadata(mut self, value: impl Into<String>) -> Self {
+        self.participant_metadata = Some(value.into());
+        self
+    }
+
+    /// Adds the given attributes to the participant attributes, keeping any set previously.
+    /// A key that was already set is overwritten with its new value.
+    pub fn with_participant_attributes(mut self, value: HashMap<String, String>) -> Self {
+        self.participant_attributes.get_or_insert_with(HashMap::new).extend(value);
+        self
+    }
+
+    /// Adds a single attribute to the participant attributes, keeping any set previously.
+    pub fn with_participant_attribute(
+        mut self,
+        key: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Self {
+        self.participant_attributes
+            .get_or_insert_with(HashMap::new)
+            .insert(key.into(), value.into());
+        self
+    }
+
+    /// Sets the name of the agent to dispatch into the room.
+    pub fn with_agent_name(mut self, value: impl Into<String>) -> Self {
+        self.agent_name = Some(value.into());
+        self
+    }
+
+    /// Sets the metadata to pass to the dispatched agent.
+    pub fn with_agent_metadata(mut self, value: impl Into<String>) -> Self {
+        self.agent_metadata = Some(value.into());
+        self
+    }
+
+    /// Sets the deployment to target. Leave unset to target the production deployment.
+    pub fn with_agent_deployment(mut self, value: impl Into<String>) -> Self {
+        self.agent_deployment = Some(value.into());
+        self
+    }
 }
 
 /// The JSON body posted to the token endpoint. Built from [`TokenSourceFetchOptions`];
