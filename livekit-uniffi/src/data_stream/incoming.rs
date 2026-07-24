@@ -53,10 +53,17 @@ pub trait IncomingDataStreamManagerDelegate: Send + Sync {
 #[uniffi::export]
 impl IncomingDataStreamManager {
     #[uniffi::constructor]
-    pub fn new(delegate: Arc<dyn IncomingDataStreamManagerDelegate>, max_payload_byte_length: Option<usize>) -> Arc<Self> {
+    pub fn new(
+        delegate: Arc<dyn IncomingDataStreamManagerDelegate>,
+        reserved_topics: Vec<String>,
+        max_payload_byte_length: Option<u64>,
+    ) -> Arc<Self> {
         let token = CancellationToken::new();
         // No reserved topics: RPC routing is a concern of the `livekit` crate, not this FFI layer.
-        let (manager, input, output) = ds::incoming::Manager::new(vec![], max_payload_byte_length);
+        let (manager, input, output) = ds::incoming::Manager::new(
+            reserved_topics,
+            max_payload_byte_length.map(|n| n as usize),
+        );
 
         let rt = crate::runtime::runtime();
         rt.spawn(shutdown_forward_task(input.clone(), token.clone()));

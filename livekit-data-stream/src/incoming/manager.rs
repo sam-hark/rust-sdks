@@ -186,7 +186,7 @@ pub struct Manager {
 
     /// Topics whose streams are handled internally by the SDK (e.g. RPC) and never surfaced as
     /// application events. Supplied by the host crate so this crate stays decoupled from RPC.
-    reserved_topics: Vec<&'static str>,
+    reserved_topics: Vec<String>,
 
     /// Max number of bytes that a data stream can contain before it is deemed to be malicious
     max_payload_byte_length: usize,
@@ -199,7 +199,7 @@ struct ManagerInner {
 
 impl Manager {
     pub fn new(
-        reserved_topics: Vec<&'static str>,
+        reserved_topics: Vec<impl Into<String>>,
         max_payload_byte_length: Option<usize>,
     ) -> (Self, ManagerInput, UnboundedReceiver<OutputEvent>) {
         // Unbounded: inbound wire packets must never be dropped (a dropped chunk is an
@@ -211,7 +211,7 @@ impl Manager {
             input_rx,
             output_tx,
 
-            reserved_topics,
+            reserved_topics: reserved_topics.into_iter().map(Into::into).collect(),
             max_payload_byte_length: max_payload_byte_length
                 .unwrap_or(DEFAULT_MAX_PAYLOAD_BYTE_LENGTH),
         };
