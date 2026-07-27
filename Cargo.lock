@@ -4074,8 +4074,12 @@ dependencies = [
 name = "livekit-token-source"
 version = "0.1.0"
 dependencies = [
- "thiserror 2.0.19",
+ "async-trait",
+ "livekit-net",
  "serde",
+ "serde_json",
+ "thiserror 2.0.19",
+ "tokio",
 ]
 
 [[package]]

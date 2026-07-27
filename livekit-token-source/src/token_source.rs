@@ -3,6 +3,7 @@ use crate::request::TokenSourceFetchOptions;
 use crate::response::TokenSourceResponse;
 use crate::response::TokenSourceResult;
 use crate::error::TokenSourceError;
+use livekit_net::{Header, HttpClientExt};
 
 const SANDBOX_ENDPOINT_URL: &str = "https://cloud-api.livekit.io/api/v2/sandbox/connection-details";
 const SANDBOX_ID_HEADER: &str = "X-Sandbox-ID";
@@ -21,42 +22,35 @@ impl TokenSourceLiteral {
 pub struct TokenSourceEndpoint {
     endpoint_url: String,
     headers: Vec<(String, String)>,
-    http_client: reqwest::Client,
 }
 
 impl TokenSourceEndpoint {
     pub fn new(endpoint_url: impl Into<String>, headers: Vec<(String, String)>) -> TokenSourceEndpoint {
-        let http_client = reqwest::Client::new();
-        
         TokenSourceEndpoint{
-            endpoint_url: endpoint_url.into(), 
+            endpoint_url: endpoint_url.into(),
             headers,
-            http_client
         }
     }
 
     pub async fn fetch(&self, options: &TokenSourceFetchOptions) -> TokenSourceResult<TokenSourceResponse> {
         let request = TokenSourceRequest::from(options);
-        
-        
-        let mut request_builder = self.http_client
-            .post(self.endpoint_url.as_str())
-            .json(&request);
-            
-        for (name, value) in &self.headers {
-            request_builder = request_builder.header(name, value);
+
+        let http_client = livekit_net::http_client().ok_or(TokenSourceError::TransportNotConfigured)?;
+
+        let body = serde_json::to_vec(&request)?;
+        let mut headers = vec![Header { name: "Content-Type".into(), value: "application/json".into() }];
+        headers.extend(self.headers.iter().map(|(name, value)| Header { name: name.clone(), value: value.clone() }));
+
+        let response = http_client.post(self.endpoint_url.clone(), headers, body).await?;
+
+        if !(200..300).contains(&response.status) {
+            return Err(TokenSourceError::Server {
+                status: response.status,
+                body: String::from_utf8_lossy(&response.body).into_owned()
+            });
         }
 
-        let response = request_builder.send().await?;
-        
-        if !response.status().is_success() {
-            return Err(TokenSourceError::Server { 
-                status: response.status().as_u16(), 
-                body: response.text().await.unwrap_or_default() 
-            });
-        }  
-
-        let connection_details = response.json::<TokenSourceResponse>().await?;
+        let connection_details = serde_json::from_slice::<TokenSourceResponse>(&response.body)?;
         Ok(connection_details)
     }
 }
