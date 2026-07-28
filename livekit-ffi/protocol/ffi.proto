@@ -184,7 +184,11 @@ message FfiRequest {
     // Room event ready signal
     ReadyForRoomEventRequest ready_for_room_event = 83;
 
-    // NEXT_ID: 87
+    // Token Source
+    NewTokenSourceRequest new_token_source = 87;
+    TokenSourceFetchRequest token_source_fetch = 88;
+
+    // NEXT_ID: 89
   }
 }
 
@@ -313,7 +317,11 @@ message FfiResponse {
     // Room event ready signal
     ReadyForRoomEventResponse ready_for_room_event = 82;
 
-    // NEXT_ID: 87
+    // Token Source
+    NewTokenSourceResponse new_token_source = 87;
+    TokenSourceFetchResponse token_source_fetch = 88;
+
+    // NEXT_ID: 89
   }
 }
 
