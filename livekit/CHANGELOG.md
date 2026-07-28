@@ -257,6 +257,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - bump libwebrtc to m125
+## 0.8.1 (2026-07-28)
+
+### Fixes
+
+- Caching of tokio backend reqwest http client - #1285 (@MaxHeimbrock)
+- Ensure participant disconnects are synthesized after connection resume - #1250 (@lukasIO)
+
 ## 0.8.0 (2026-07-27)
 
 ### Breaking Changes
