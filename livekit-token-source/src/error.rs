@@ -11,9 +11,4 @@ pub enum TokenSourceError {
 
     #[error("token server returned {status}: {body}")]
     Server{ status: u16, body: String },
-
-    #[error("error A occurred")]
-    ErrorA,
-    #[error("error B occurred")]
-    ErrorB,
 }
